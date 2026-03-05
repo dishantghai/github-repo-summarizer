@@ -5,7 +5,7 @@ API service that analyzes GitHub repositories and generates human-readable summa
 ## Features
 
 - **Fast Analysis** - Uses GitHub API directly (no cloning required)
-- **LLM-Powered** - Generates intelligent summaries using Nebius Token Factory
+- **LLM-Powered** - Generates summaries using Nebius Token Factory (OpenAI-compatible), with optional OpenAI fallback
 - **Smart Filtering** - Automatically ignores binary files, lock files, and dependencies
 - **Context Management** - Handles repositories of any size within token limits
 - **Secure** - API keys managed via environment variables
@@ -37,6 +37,10 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 uv pip install -r requirements.txt
+```
+Alternatively, you can install from `pyproject.toml`:
+```bash
+uv sync
 ```
 
 4. **Configure environment variables:**
@@ -107,6 +111,8 @@ Visit `http://localhost:8000/docs` for Swagger UI documentation.
 - Good balance between performance and cost-effectiveness
 - Large context window support (up to 128K tokens)
 
+You can override the Nebius model by setting `NEBIUS_MODEL` in `.env`. If `OPENAI_API_KEY` is set and `NEBIUS_API_KEY` is not, the service uses OpenAI as a fallback (default model: `gpt-4o-mini`).
+
 ## Repository Processing Strategy
 
 ### What Gets Analyzed
@@ -134,16 +140,19 @@ The following are automatically filtered out to save context space:
 
 ### Context Management
 
-- **Token Budget**: ~12,000 tokens maximum to ensure compatibility with LLM context limits
+- **Token Budget**: ~12,000 tokens maximum to fit LLM context limits
 - **File Limits**: Maximum 15 files analyzed per repository
-- **Smart Truncation**: Large files are truncated at 3,000 characters with indication
+- **Smart Truncation**: Large files are truncated at 3,000 characters; additional truncation may occur when nearing the token budget
 - **Tree Structure**: Directory tree limited to 100 lines for overview
+
+Note: Large repositories are sampled within these limits rather than fully analyzed.
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `NEBIUS_API_KEY` | Yes* | API key from Nebius Token Factory |
+| `NEBIUS_MODEL` | No | Override Nebius model name |
 | `OPENAI_API_KEY` | No | Alternative: OpenAI API key |
 | `GITHUB_TOKEN` | No | GitHub PAT for higher rate limits (5000/hr vs 60/hr) |
 
@@ -170,6 +179,10 @@ The API returns appropriate HTTP status codes:
 ```bash
 pytest tests/ -v
 ```
+
+Additional scripts:
+- `test_manual.py` runs a live GitHub API integration check (requires network access).
+- `test_models.py` probes Nebius model names (requires a valid `NEBIUS_API_KEY`).
 
 ### Project Structure
 
@@ -199,6 +212,11 @@ github-repo-summarizer/
 ├── .gitignore
 └── README.md
 ```
+
+## Health Endpoints
+
+- `GET /` basic service status
+- `GET /health` LLM/GitHub token configuration status
 
 ## License
 
