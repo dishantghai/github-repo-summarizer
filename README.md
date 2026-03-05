@@ -22,9 +22,16 @@ API service that analyzes GitHub repositories and generates human-readable summa
 
 1. **Clone this repository:**
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/dishantghai/github-repo-summarizer.git
 cd github-repo-summarizer
 ```
+
+**Or download the ZIP from GitHub:**
+1. On the repository page, click **Code** → **Download ZIP**.
+2. Unzip it and `cd` into the extracted folder (e.g., `github-repo-summarizer-main`).
+
+**If you already have the project folder (e.g., from a submitted ZIP):**
+Just `cd` into the existing `github-repo-summarizer` directory and continue with the steps below.
 
 2. **Install uv (if not already installed):**
 ```bash
